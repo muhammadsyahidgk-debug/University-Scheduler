@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jadwal &amp; Tugas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f5f7fa; --ink:#14213d; --ink-soft:#3d4a68;
+    --line:#d7deea; --amber:#fca311; --teal:#2a9d8f;
+    --card:#ffffff; --danger:#c1443c;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark){
+      --paper:#12151f; --ink:#eef1f8; --ink-soft:#aab4cc;
+      --line:#2a3247; --card:#1a1f2e;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12151f; --ink:#eef1f8; --ink-soft:#aab4cc;
+    --line:#2a3247; --card:#1a1f2e;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-padding-top:env(safe-area-inset-top,0px);}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    min-height:100%;
+    -webkit-font-smoothing:antialiased;
+  }
+  header{
+    padding:28px 20px 18px; border-bottom:1px solid var(--line);
+    padding-top:calc(28px + env(safe-area-inset-top,0px));
+  }
+  h1{
+    font-family:'Fraunces',serif; font-weight:600; font-size:28px;
+    margin:0 0 4px; letter-spacing:-0.01em;
+  }
+  header p{margin:0; color:var(--ink-soft); font-size:14px;}
+
+  nav.tabs{
+    display:flex; gap:4px; padding:14px 20px 0; border-bottom:1px solid var(--line);
+    background:var(--paper); overflow-x:auto;
+  }
+  nav.tabs button{
+    font-family:'Inter',sans-serif; font-size:14px; font-weight:600;
+    background:none; border:none; color:var(--ink-soft);
+    padding:10px 4px 12px; margin-right:22px; cursor:pointer;
+    border-bottom:2px solid transparent; white-space:nowrap;
+  }
+  nav.tabs button.active{color:var(--ink); border-bottom-color:var(--amber);}
+
+  main{max-width:760px; margin:0 auto; padding:20px 20px 60px;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  /* ---- Jadwal ---- */
+  .day-row{
+    display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; margin-bottom:16px;
+  }
+  .day-row button{
+    flex:0 0 auto; border:1px solid var(--line); background:var(--card);
+    color:var(--ink-soft); font-family:'Inter',sans-serif; font-size:13px; font-weight:600;
+    padding:8px 14px; border-radius:999px; cursor:pointer;
+  }
+  .day-row button.active{background:var(--ink); color:var(--paper); border-color:var(--ink);}
+
+  .slot{
+    display:flex; align-items:center; gap:14px;
+    background:var(--card); border:1px solid var(--line); border-left:4px solid var(--teal);
+    border-radius:8px; padding:14px 16px; margin-bottom:10px;
+  }
+  .slot .time{font-family:'Fraunces',serif; font-weight:600; font-size:15px; width:96px; flex:0 0 auto; color:var(--ink);}
+  .slot .subj{font-weight:600; font-size:15px;}
+  .slot .room{color:var(--ink-soft); font-size:13px; margin-top:2px;}
+  .slot .body{flex:1;}
+  .slot .del{
+    background:none; border:none; color:var(--ink-soft); cursor:pointer; font-size:18px;
+    padding:4px 6px; line-height:1;
+  }
+  .slot .del:hover{color:var(--danger);}
+  .empty{color:var(--ink-soft); font-size:14px; padding:24px 0; text-align:center;}
+
+  form.add{
+    background:var(--card); border:1px solid var(--line); border-radius:10px;
+    padding:16px; margin-top:18px;
+  }
+  form.add .grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  form.add .full{grid-column:1/-1;}
+  label{display:block; font-size:12px; color:var(--ink-soft); margin-bottom:4px; font-weight:600;}
+  input, select{
+    width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:6px;
+    background:var(--paper); color:var(--ink); font-family:'Inter',sans-serif; font-size:14px;
+  }
+  input:focus, select:focus{outline:2px solid var(--amber); outline-offset:1px;}
+  .add-btn{
+    margin-top:12px; width:100%; padding:11px; border:none; border-radius:6px;
+    background:var(--ink); color:var(--paper); font-weight:700; font-size:14px; cursor:pointer;
+  }
+  .add-btn:hover{background:var(--teal);}
+
+  /* ---- Tugas ---- */
+  .task-filters{display:flex; gap:8px; margin-bottom:14px;}
+  .task-filters button{
+    border:1px solid var(--line); background:var(--card); color:var(--ink-soft);
+    font-size:13px; font-weight:600; padding:7px 13px; border-radius:999px; cursor:pointer;
+  }
+  .task-filters button.active{background:var(--amber); color:#1a1200; border-color:var(--amber);}
+
+  .task{
+    display:flex; align-items:flex-start; gap:12px;
+    background:var(--card); border:1px solid var(--line); border-radius:8px;
+    padding:14px 16px; margin-bottom:10px;
+  }
+  .task.done{opacity:0.55;}
+  .task input[type=checkbox]{
+    width:20px; height:20px; margin-top:1px; accent-color:var(--teal); flex:0 0 auto; cursor:pointer;
+  }
+  .task .body{flex:1;}
+  .task .title{font-weight:600; font-size:15px;}
+  .task.done .title{text-decoration:line-through;}
+  .task .meta{font-size:12.5px; color:var(--ink-soft); margin-top:3px;}
+  .task .meta.overdue{color:var(--danger); font-weight:600;}
+  .task .del{background:none; border:none; color:var(--ink-soft); cursor:pointer; font-size:18px; padding:2px 4px;}
+  .task .del:hover{color:var(--danger);}
+
+  @media (max-width:480px){
+    form.add .grid{grid-template-columns:1fr;}
+    .slot .time{width:72px; font-size:14px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Jadwal &amp; Tugas</h1>
+  <p>Atur jam pelajaran dan pantau tugas dalam satu tempat.</p>
+</header>
+
+<nav class="tabs">
+  <button data-tab="jadwal" class="active">Jadwal</button>
+  <button data-tab="tugas">Tugas</button>
+</nav>
+
+<main>
+
+  <!-- ===== JADWAL ===== -->
+  <section id="jadwal" class="panel active">
+    <div class="day-row" id="dayRow"></div>
+    <div id="slotList"></div>
+
+    <form class="add" id="formJadwal">
+      <div class="grid">
+        <div>
+          <label for="j-mulai">Jam mulai</label>
+          <input type="time" id="j-mulai" required>
+        </div>
+        <div>
+          <label for="j-selesai">Jam selesai</label>
+          <input type="time" id="j-selesai" required>
+        </div>
+        <div class="full">
+          <label for="j-mapel">Mata pelajaran</label>
+          <input type="text" id="j-mapel" placeholder="mis. Matematika" required>
+        </div>
+        <div class="full">
+          <label for="j-ruang">Ruang / catatan (opsional)</label>
+          <input type="text" id="j-ruang" placeholder="mis. Ruang 3A">
+        </div>
+      </div>
+      <button type="submit" class="add-btn">Tambah ke jadwal</button>
+    </form>
+  </section>
+
+  <!-- ===== TUGAS ===== -->
+  <section id="tugas" class="panel">
+    <div class="task-filters" id="taskFilters">
+      <button data-filter="semua" class="active">Semua</button>
+      <button data-filter="belum">Belum selesai</button>
+      <button data-filter="selesai">Selesai</button>
+    </div>
+    <div id="taskList"></div>
+
+    <form class="add" id="formTugas">
+      <div class="grid">
+        <div class="full">
+          <label for="t-judul">Nama tugas</label>
+          <input type="text" id="t-judul" placeholder="mis. Esai Bahasa Indonesia" required>
+        </div>
+        <div>
+          <label for="t-mapel">Mata pelajaran</label>
+          <input type="text" id="t-mapel" placeholder="mis. Fisika">
+        </div>
+        <div>
+          <label for="t-tenggat">Tenggat</label>
+          <input type="date" id="t-tenggat">
+        </div>
+      </div>
+      <button type="submit" class="add-btn">Tambah tugas</button>
+    </form>
+  </section>
+
+</main>
+
+<script>
+const DAYS = ["Senin","Selasa","Rabu","Kamis","Jumat","Sabtu","Minggu"];
+let state = { schedule: [], tasks: [] };
+let activeDay = new Date().getDay(); // 0=Sun
+activeDay = activeDay === 0 ? 6 : activeDay - 1; // map to 0=Senin..6=Minggu
+let taskFilter = "semua";
+
+function load(){
+  try{
+    const raw = localStorage.getItem('jadwal-tugas-data');
+    if(raw) state = JSON.parse(raw);
+  }catch(e){ console.error('Gagal memuat data', e); }
+  if(!state.schedule) state.schedule = [];
+  if(!state.tasks) state.tasks = [];
+}
+function save(){
+  try{ localStorage.setItem('jadwal-tugas-data', JSON.stringify(state)); }
+  catch(e){ console.error('Gagal menyimpan data', e); }
+}
+
+// ---- Tabs ----
+document.querySelectorAll('nav.tabs button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById(btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ---- Jadwal ----
+function renderDayRow(){
+  const row = document.getElementById('dayRow');
+  row.innerHTML = '';
+  DAYS.forEach((d,i)=>{
+    const b = document.createElement('button');
+    b.textContent = d;
+    if(i===activeDay) b.classList.add('active');
+    b.addEventListener('click', ()=>{ activeDay=i; renderDayRow(); renderSlots(); });
+    row.appendChild(b);
+  });
+}
+function renderSlots(){
+  const list = document.getElementById('slotList');
+  list.innerHTML = '';
+  const items = state.schedule
+    .filter(s=>s.day===activeDay)
+    .sort((a,b)=> a.start.localeCompare(b.start));
+  if(items.length===0){
+    list.innerHTML = '<div class="empty">Belum ada jadwal untuk hari ini.</div>';
+    return;
+  }
+  items.forEach(s=>{
+    const el = document.createElement('div');
+    el.className='slot';
+    el.innerHTML = `
+      <div class="time">${s.start}–${s.end}</div>
+      <div class="body">
+        <div class="subj">${escapeHtml(s.subject)}</div>
+        ${s.room ? `<div class="room">${escapeHtml(s.room)}</div>` : ''}
+      </div>
+      <button class="del" aria-label="Hapus">✕</button>
+    `;
+    el.querySelector('.del').addEventListener('click', ()=>{
+      state.schedule = state.schedule.filter(x=>x.id!==s.id);
+      save(); renderSlots();
+    });
+    list.appendChild(el);
+  });
+}
+document.getElementById('formJadwal').addEventListener('submit', e=>{
+  e.preventDefault();
+  const start = document.getElementById('j-mulai').value;
+  const end = document.getElementById('j-selesai').value;
+  const subject = document.getElementById('j-mapel').value.trim();
+  const room = document.getElementById('j-ruang').value.trim();
+  if(!start || !end || !subject) return;
+  state.schedule.push({ id: Date.now()+Math.random(), day: activeDay, start, end, subject, room });
+  save();
+  e.target.reset();
+  renderSlots();
+});
+
+// ---- Tugas ----
+document.getElementById('taskFilters').addEventListener('click', e=>{
+  if(e.target.tagName!=='BUTTON') return;
+  document.querySelectorAll('#taskFilters button').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  taskFilter = e.target.dataset.filter;
+  renderTasks();
+});
+function fmtDate(iso){
+  if(!iso) return null;
+  const d = new Date(iso+'T00:00:00');
+  return d.toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' });
+}
+function isOverdue(t){
+  if(!t.due || t.done) return false;
+  const today = new Date(); today.setHours(0,0,0,0);
+  return new Date(t.due+'T00:00:00') < today;
+}
+function renderTasks(){
+  const list = document.getElementById('taskList');
+  list.innerHTML = '';
+  let items = state.tasks.slice().sort((a,b)=>{
+    if(!a.due) return 1; if(!b.due) return -1;
+    return a.due.localeCompare(b.due);
+  });
+  if(taskFilter==='belum') items = items.filter(t=>!t.done);
+  if(taskFilter==='selesai') items = items.filter(t=>t.done);
+
+  if(items.length===0){
+    list.innerHTML = '<div class="empty">Tidak ada tugas di sini.</div>';
+    return;
+  }
+  items.forEach(t=>{
+    const el = document.createElement('div');
+    el.className = 'task' + (t.done ? ' done' : '');
+    const metaParts = [];
+    if(t.subject) metaParts.push(escapeHtml(t.subject));
+    if(t.due) metaParts.push((isOverdue(t) ? 'Terlambat · ' : 'Tenggat ') + fmtDate(t.due));
+    el.innerHTML = `
+      <input type="checkbox" ${t.done?'checked':''}>
+      <div class="body">
+        <div class="title">${escapeHtml(t.title)}</div>
+        ${metaParts.length ? `<div class="meta${isOverdue(t)?' overdue':''}">${metaParts.join(' · ')}</div>` : ''}
+      </div>
+      <button class="del" aria-label="Hapus">✕</button>
+    `;
+    el.querySelector('input[type=checkbox]').addEventListener('change', ev=>{
+      t.done = ev.target.checked; save(); renderTasks();
+    });
+    el.querySelector('.del').addEventListener('click', ()=>{
+      state.tasks = state.tasks.filter(x=>x.id!==t.id);
+      save(); renderTasks();
+    });
+    list.appendChild(el);
+  });
+}
+document.getElementById('formTugas').addEventListener('submit', e=>{
+  e.preventDefault();
+  const title = document.getElementById('t-judul').value.trim();
+  const subject = document.getElementById('t-mapel').value.trim();
+  const due = document.getElementById('t-tenggat').value;
+  if(!title) return;
+  state.tasks.push({ id: Date.now()+Math.random(), title, subject, due, done:false });
+  save();
+  e.target.reset();
+  renderTasks();
+});
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+// ---- init ----
+load();
+renderDayRow();
+renderSlots();
+renderTasks();
+</script>
+</body>
+</html>
